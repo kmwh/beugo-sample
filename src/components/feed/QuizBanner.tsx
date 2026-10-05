@@ -16,17 +16,17 @@ export const QuizBanner: React.FC<QuizBannerProps> = ({
   onDismiss,
 }) => {
   return (
-    <div className="absolute top-12 left-3 right-3 z-40 animate-in fade-in duration-200 pointer-events-auto">
-      <div className="bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-xl p-3 shadow-lg text-white flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 text-zinc-300">
+    <div className="absolute top-16 left-3 right-3 z-40 animate-in fade-in duration-200 pointer-events-auto select-none">
+      <div className="bg-[#0f0f0f]/95 backdrop-blur-2xl border border-white/20 rounded-2xl p-3.5 shadow-2xl text-white flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0 text-indigo-300">
             <HelpCircle className="w-4 h-4" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-medium text-zinc-400">
-              학습 확인 퀴즈
+            <span className="text-[10px] font-bold text-indigo-400">
+              [{clip.episodeIndex}강 학습 확인 퀴즈]
             </span>
-            <span className="text-xs font-semibold text-zinc-100 truncate">
+            <span className="text-xs font-bold text-white truncate mt-0.5">
               {quiz.question}
             </span>
           </div>
@@ -36,18 +36,18 @@ export const QuizBanner: React.FC<QuizBannerProps> = ({
           <button
             type="button"
             onClick={onOpenQuiz}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold transition-all shadow-sm cursor-pointer"
           >
-            <span>[{clip.episodeIndex}강 퀴즈 풀기]</span>
+            <span>퀴즈 풀기</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
             onClick={onDismiss}
-            className="p-1 rounded-md text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="닫기"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -9,9 +9,9 @@ import {
   Layers, 
   Plus, 
   Check, 
-  X, 
   BookOpen, 
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 
 const CATEGORIES: ('전체' | JobCategory)[] = [
@@ -68,73 +68,245 @@ export const ExploreView: React.FC = () => {
     setActivePage('courses');
   };
 
+  // =====================================================
+  // VIEW 1: Separate Course Detail Subpage (Requirement 2 & 1)
+  // =====================================================
+  if (selectedCourseForDetail) {
+    const course = selectedCourseForDetail;
+    const isEnrolled = enrolledCourseIds.has(course.id);
+
+    return (
+      <div className="w-full min-h-full bg-[#090a0f] text-zinc-100 flex flex-col p-4 pb-24 no-scrollbar select-none">
+        
+        {/* Top Back Navigation Bar: Pure Arrow without box or label */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedCourseForDetail(null)}
+              className="p-1 -ml-1 text-white hover:text-zinc-300 transition-colors cursor-pointer"
+              title="뒤로가기"
+            >
+              <ArrowLeft className="w-6 h-6 stroke-[2.2]" />
+            </button>
+            <h1 className="text-base font-bold text-white tracking-tight">강좌 상세</h1>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[11px] font-semibold border border-indigo-500/30">
+            {course.category}
+          </span>
+        </div>
+
+        {/* Course Header & Cover */}
+        <div className="pt-3.5 space-y-3.5">
+          <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-white/10 shadow-md">
+            <img
+              src={course.thumbnailUrl}
+              alt={course.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
+            
+            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-semibold border border-white/20">
+                {course.category}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-zinc-200 text-[10px] font-medium border border-white/15">
+                {course.difficulty}
+              </span>
+            </div>
+
+            <div className="absolute bottom-3 left-3.5 right-3.5 text-white space-y-0.5">
+              <h2 className="text-base font-bold line-clamp-1">
+                {course.title}
+              </h2>
+              <p className="text-xs text-zinc-300 line-clamp-1 leading-relaxed">
+                {course.description}
+              </p>
+            </div>
+          </div>
+
+          {/* Instructor & Goal Details */}
+          <div className="p-3.5 bg-[#0f0f0f] rounded-2xl border border-white/10 flex items-center justify-between shadow-md">
+            <div className="flex items-center gap-3">
+              <img
+                src={course.instructor.avatar}
+                alt={course.instructor.name}
+                className="w-9 h-9 rounded-full object-cover border border-white/20"
+              />
+              <div>
+                <span className="text-xs font-bold text-white block">
+                  {course.instructor.name}
+                </span>
+                <span className="text-xs text-zinc-400">
+                  {course.instructor.role}
+                </span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] text-zinc-400 block font-mono">권장 학습량</span>
+              <span className="text-xs font-bold text-indigo-300">
+                {course.dailyGoalSuggestion}
+              </span>
+            </div>
+          </div>
+
+          {/* Curriculum List */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                <span>커리큘럼 (총 {course.clips.length}강)</span>
+              </h3>
+              <span className="text-[11px] text-zinc-400 font-mono">숏폼 집중 코스</span>
+            </div>
+
+            <div className="space-y-1.5">
+              {course.clips.map(clip => (
+                <div
+                  key={clip.id}
+                  className="p-3 bg-[#0f0f0f] border border-white/10 rounded-xl flex items-center justify-between shadow-sm"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-bold text-[10px] shrink-0 border border-indigo-500/30">
+                      {clip.episodeIndex}강
+                    </span>
+                    <span className="text-xs text-zinc-200 font-medium truncate">{clip.clipTitle}</span>
+                  </div>
+                  <span className="text-xs text-zinc-400 font-mono shrink-0 ml-2">
+                    {clip.durationSeconds}초
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="pt-2">
+            {isEnrolled ? (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => unenrollCourse(course.id)}
+                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-zinc-400 transition-colors cursor-pointer"
+                >
+                  강의실 제외
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGoToCourseInClassroom(course.id)}
+                  className="flex-1 py-2.5 px-4 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>내 강의실에서 수강하기</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (course.clips[0]) {
+                      setSelectedCourseForDetail(null);
+                      goToClip(course.clips[0].id);
+                    }
+                  }}
+                  className="flex-1 py-2.5 px-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-bold text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>1화 미리보기</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    enrollCourse(course.id);
+                  }}
+                  className="flex-1 py-2.5 px-4 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>내 강의실에 추가</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =====================================================
+  // VIEW 2: Explore Course List
+  // =====================================================
   return (
-    <div className="w-full min-h-full bg-zinc-950 text-zinc-100 flex flex-col p-4 pb-20 no-scrollbar">
+    <div className="w-full min-h-full bg-[#090a0f] text-zinc-100 flex flex-col p-4 pb-24 no-scrollbar select-none">
       
-      {/* 1. Page Title & Unified Search Bar */}
-      <div className="space-y-3 pb-3 border-b border-zinc-800">
+      {/* 1. Page Header & Unified Search Bar */}
+      <div className="space-y-3 pb-3.5 border-b border-white/10">
         <div>
-          <h1 className="text-base font-bold text-white">강좌 탐색</h1>
-          <p className="text-[11px] text-zinc-400">
-            관심 있는 실무 강좌를 찾고 내 강의실에 담아보세요.
+          <h1 className="text-lg font-bold text-white tracking-tight">강좌 탐색</h1>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            실무 직무 강좌를 검색하고 내 강의실에 담아 학습하세요.
           </p>
         </div>
 
-        {/* Unified Search Input */}
+        {/* Unified Search Input (Pill rounded style) */}
         <div className="relative">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="강좌명, 실무 키워드, 자막 내용으로 검색..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-8 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition-colors"
+            placeholder="강좌명, 직무 키워드, 자막 내용으로 검색..."
+            className="w-full bg-[#0f0f0f] border border-white/10 rounded-full pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-white/30 transition-colors font-sans shadow-inner"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-white p-0.5 cursor-pointer"
             >
               ✕
             </button>
           )}
         </div>
 
-        {/* Category Filter Chips */}
+        {/* Category Filter Chips: Rounded-full pills matching Home */}
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
-                selectedCategory === cat
-                  ? 'bg-zinc-800 border-zinc-700 text-white'
-                  : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {CATEGORIES.map(cat => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all shadow-md active:scale-95 cursor-pointer ${
+                  isSelected
+                    ? 'bg-white text-black shadow-white/20 font-bold'
+                    : 'bg-[#0f0f0f] text-zinc-300 border border-white/10 hover:bg-white/10'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* 2. Course List */}
-      <div className="pt-3">
-        <div className="flex items-center justify-between mb-3 text-xs text-zinc-400">
-          <span className="font-medium text-zinc-300">
-            강좌 목록 ({filteredCourses.length}개)
+      <div className="pt-3.5">
+        <div className="flex items-center justify-between mb-3 text-xs">
+          <span className="font-bold text-white">
+            강좌 목록 <span className="text-indigo-400 font-mono">[{filteredCourses.length}]</span>
           </span>
         </div>
 
         {filteredCourses.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500 text-xs">
-            <Layers className="w-8 h-8 mx-auto mb-2 text-zinc-600" />
-            검색 조건에 맞는 강좌가 없습니다.
+          <div className="text-center py-16 px-4 bg-[#0f0f0f] border border-white/10 rounded-2xl">
+            <Layers className="w-8 h-8 mx-auto mb-2 text-zinc-500" />
+            <p className="text-xs font-semibold text-zinc-300">검색 조건에 맞는 강좌가 없습니다.</p>
+            <p className="text-[11px] text-zinc-500 mt-1">다른 검색어나 카테고리를 선택해보세요.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {filteredCourses.map(course => {
               const isEnrolled = enrolledCourseIds.has(course.id);
 
@@ -142,60 +314,74 @@ export const ExploreView: React.FC = () => {
                 <div
                   key={course.id}
                   onClick={() => handleOpenCourseDetail(course)}
-                  className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors cursor-pointer group"
+                  className="bg-[#0f0f0f] border border-white/10 rounded-2xl overflow-hidden hover:border-white/25 transition-all cursor-pointer group shadow-md"
                 >
-                  {/* Thumbnail */}
-                  <div className="relative aspect-video w-full overflow-hidden bg-black">
+                  {/* Thumbnail Cover */}
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
                     <img
                       src={course.thumbnailUrl}
                       alt={course.title}
-                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-200"
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                    <div className="absolute top-2 left-2 flex items-center gap-1">
-                      <span className="px-2 py-0.5 rounded bg-zinc-900/80 backdrop-blur-sm text-white text-[10px] font-medium">
+                    {/* Top Badges */}
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-white text-[10px] font-semibold border border-white/20">
                         {course.category}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-zinc-900/80 backdrop-blur-sm text-zinc-300 text-[10px] font-medium">
+                      <span className="px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-zinc-300 text-[10px] font-medium border border-white/15">
                         {course.difficulty}
                       </span>
                     </div>
 
                     {isEnrolled && (
-                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-semibold flex items-center gap-1 shadow-sm">
-                        <Check className="w-3 h-3" />
+                      <div className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-sm border border-emerald-400/30">
+                        <Check className="w-3 h-3 stroke-[3]" />
                         <span>수강 중</span>
                       </div>
                     )}
 
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-white text-[10px]">
-                      <span className="flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm text-zinc-300">
-                        <Clock className="w-3 h-3 text-zinc-400" />
-                        {course.dailyGoalSuggestion}
+                    {/* Bottom Metadata inside thumbnail */}
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-1 bg-black/70 backdrop-blur-md px-2.5 py-0.5 rounded-full text-zinc-200 border border-white/15 text-[11px] font-medium">
+                        <Clock className="w-3 h-3 text-indigo-400" />
+                        <span>{course.dailyGoalSuggestion}</span>
                       </span>
-                      <span className="flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm text-zinc-300">
-                        <Eye className="w-3 h-3" />
-                        {course.views.toLocaleString()}회
+                      <span className="flex items-center gap-1 bg-black/70 backdrop-blur-md px-2.5 py-0.5 rounded-full text-zinc-300 border border-white/15 text-[10px]">
+                        <Eye className="w-3 h-3 text-zinc-400" />
+                        <span>{course.views.toLocaleString()}회</span>
                       </span>
                     </div>
                   </div>
 
-                  {/* Course Info */}
-                  <div className="p-3.5 space-y-1.5">
-                    <h3 className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">
+                  {/* Course Info Card Body */}
+                  <div className="p-3.5 space-y-2">
+                    <h3 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">
                       {course.title}
                     </h3>
-                    <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
                       {course.description}
                     </p>
 
-                    <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between">
-                      <span className="text-[11px] text-zinc-400">
-                        {course.instructor.name} · {course.instructor.role}
-                      </span>
+                    {/* Instructor & CTA Row */}
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={course.instructor.avatar}
+                          alt=""
+                          className="w-5 h-5 rounded-full object-cover border border-white/20"
+                        />
+                        <span className="text-xs font-semibold text-zinc-200">
+                          {course.instructor.name}
+                        </span>
+                        <span className="text-zinc-500 text-[10px]">·</span>
+                        <span className="text-xs text-zinc-400">
+                          {course.instructor.role}
+                        </span>
+                      </div>
 
-                      <span className="text-xs font-medium text-indigo-400 flex items-center gap-0.5">
+                      <span className="text-xs font-bold text-indigo-400 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
                         상세보기 <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -206,139 +392,6 @@ export const ExploreView: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* 3. Course Detail Modal & '내 강의실에 추가' Action */}
-      {selectedCourseForDetail && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-[420px] bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-2xl text-white max-h-[90vh] overflow-y-auto no-scrollbar">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <span className="text-xs font-semibold text-zinc-400">강좌 상세 설명</span>
-              <button
-                type="button"
-                onClick={() => setSelectedCourseForDetail(null)}
-                className="p-1 text-zinc-500 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Thumbnail */}
-            <div className="relative aspect-video rounded-xl overflow-hidden my-3 bg-black">
-              <img
-                src={selectedCourseForDetail.thumbnailUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 left-2 flex gap-1">
-                <span className="px-2 py-0.5 rounded bg-zinc-900/90 text-white text-[10px] font-medium">
-                  {selectedCourseForDetail.category}
-                </span>
-                <span className="px-2 py-0.5 rounded bg-zinc-900/90 text-zinc-300 text-[10px] font-medium">
-                  {selectedCourseForDetail.difficulty}
-                </span>
-              </div>
-            </div>
-
-            {/* Title & Description */}
-            <div className="space-y-1 mb-4">
-              <h2 className="text-sm font-bold text-white">
-                {selectedCourseForDetail.title}
-              </h2>
-              <p className="text-xs text-zinc-300 leading-relaxed pt-1">
-                {selectedCourseForDetail.description}
-              </p>
-            </div>
-
-            {/* Instructor Info */}
-            <div className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800 flex items-center gap-2.5 mb-4">
-              <img
-                src={selectedCourseForDetail.instructor.avatar}
-                alt=""
-                className="w-9 h-9 rounded-full object-cover border border-zinc-700"
-              />
-              <div>
-                <span className="text-xs font-semibold text-white block">
-                  {selectedCourseForDetail.instructor.name}
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  {selectedCourseForDetail.instructor.role}
-                </span>
-              </div>
-            </div>
-
-            {/* Curriculum List */}
-            <div className="space-y-2 mb-5">
-              <span className="text-xs font-semibold text-zinc-300 block">
-                커리큘럼 (총 {selectedCourseForDetail.clips.length}강)
-              </span>
-              <div className="space-y-1.5">
-                {selectedCourseForDetail.clips.map(clip => (
-                  <div
-                    key={clip.id}
-                    className="p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80 flex items-center justify-between text-xs"
-                  >
-                    <span className="text-zinc-200 line-clamp-1">{clip.clipTitle}</span>
-                    <span className="text-[10px] text-zinc-500 font-mono shrink-0 ml-2">
-                      {clip.durationSeconds}초 숏폼
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Actions: Add to My Classroom or Go to Classroom */}
-            <div className="space-y-2 pt-2 border-t border-zinc-800">
-              {enrolledCourseIds.has(selectedCourseForDetail.id) ? (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => unenrollCourse(selectedCourseForDetail.id)}
-                    className="px-3 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-400 transition-colors"
-                  >
-                    강의실에서 제외
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleGoToCourseInClassroom(selectedCourseForDetail.id)}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    <span>내 강의실에서 수강하기</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (selectedCourseForDetail.clips[0]) {
-                        setSelectedCourseForDetail(null);
-                        goToClip(selectedCourseForDetail.clips[0].id);
-                      }
-                    }}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>1화 미리보기</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      enrollCourse(selectedCourseForDetail.id);
-                    }}
-                    className="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>내 강의실에 추가</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

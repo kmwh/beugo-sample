@@ -141,8 +141,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Toast Notifications System (defined first so all actions can call showToast)
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastSeqRef = useRef(0);
+  const lastToastRef = useRef<{ message: string; timestamp: number } | null>(null);
 
   const showToast = useCallback((message: string, type: 'info' | 'success' | 'warning' = 'info') => {
+    const now = Date.now();
+    if (lastToastRef.current && lastToastRef.current.message === message && now - lastToastRef.current.timestamp < 600) {
+      return;
+    }
+    lastToastRef.current = { message, timestamp: now };
+
     toastSeqRef.current += 1;
     const id = `toast-${toastSeqRef.current}`;
     setToasts(prev => [...prev, { id, message, type }]);
@@ -324,17 +331,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const toggleSaveClip = (clipId: string) => {
+    const isCurrentlySaved = savedClipIds.has(clipId);
     setSavedClipIds(prev => {
       const next = new Set(prev);
       if (next.has(clipId)) {
         next.delete(clipId);
-        showToast('저장한 영상에서 제외되었습니다.', 'info');
       } else {
         next.add(clipId);
-        showToast('내 페이지 > 저장한 영상에 보관되었습니다.', 'success');
       }
       return next;
     });
+
+    if (isCurrentlySaved) {
+      showToast('저장한 영상에서 제외되었습니다.', 'info');
+    } else {
+      showToast('내 페이지 > 저장한 영상에 보관되었습니다.', 'success');
+    }
   };
 
   // 7. Likes & Views

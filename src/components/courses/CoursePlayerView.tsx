@@ -137,21 +137,21 @@ export const CoursePlayerView: React.FC<CoursePlayerViewProps> = ({
     <div className="relative w-full h-[calc(100dvh-56px)] min-h-[500px] bg-black overflow-hidden select-none">
       
       {/* Top Floating Course Title Bar & Exit Button */}
-      <div className="absolute top-3.5 left-4 right-16 z-40 flex items-center gap-2 pointer-events-auto">
+      <div className="absolute top-4 left-4 right-16 z-40 flex items-center gap-2 pointer-events-auto">
         <button
           type="button"
           onClick={onExit}
-          className="p-1.5 rounded-full bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 text-zinc-300 hover:text-white transition-colors"
-          title="강좌 목록으로 나가기"
+          className="p-1.5 text-white hover:text-zinc-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] transition-colors cursor-pointer"
+          title="뒤로가기"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-6 h-6 stroke-[2.2]" />
         </button>
 
-        <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 px-2.5 py-1 rounded-full flex items-center gap-1.5 min-w-0">
-          <span className="text-[11px] font-bold text-white truncate max-w-[160px]">
+        <div className="bg-black/80 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-full flex items-center gap-2 min-w-0 shadow-lg">
+          <span className="text-xs font-bold text-white truncate max-w-[170px]">
             {course.title}
           </span>
-          <span className="text-[10px] text-indigo-400 font-mono font-semibold shrink-0">
+          <span className="text-[10px] text-indigo-300 font-mono font-bold bg-indigo-500/20 border border-indigo-500/30 px-2 py-0.5 rounded-full shrink-0">
             {activeClip.episodeIndex}/{activeClip.totalEpisodes}강
           </span>
         </div>
@@ -162,8 +162,8 @@ export const CoursePlayerView: React.FC<CoursePlayerViewProps> = ({
         <button
           type="button"
           onClick={() => openFinalQuiz(course)}
-          className="absolute top-3.5 right-14 z-40 p-1.5 rounded-full bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 text-amber-400 hover:text-amber-300 transition-colors pointer-events-auto"
-          title="코스 최종 종합 퀴즈 풀기"
+          className="absolute top-4 right-14 z-40 p-2 rounded-full bg-black/80 backdrop-blur-md border border-amber-500/40 text-amber-300 hover:bg-black transition-all shadow-lg pointer-events-auto cursor-pointer"
+          title="강좌 최종 종합 퀴즈 응시"
         >
           <Award className="w-4 h-4" />
         </button>

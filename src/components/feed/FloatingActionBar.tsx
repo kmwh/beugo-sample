@@ -38,14 +38,20 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
     showToast('강의 링크가 복사되었습니다.', 'success');
   };
 
-  // If in distraction-free mode, show only a small subtle restore button
+  // Format likes count similar to YouTube (e.g. 9.9천)
+  const totalLikes = clip.likes + (isLiked ? 1 : 0);
+  const formattedLikes = totalLikes >= 1000 
+    ? `${(totalLikes / 1000).toFixed(1)}천`
+    : `${totalLikes}`;
+
+  // Distraction-free mode toggle button
   if (distractionFree) {
     return (
-      <div className="absolute bottom-20 right-3 z-40 pointer-events-auto">
+      <div className="absolute bottom-20 right-3.5 z-40 pointer-events-auto">
         <button
           type="button"
           onClick={() => setDistractionFree(false)}
-          className="p-2.5 rounded-full bg-zinc-900/80 backdrop-blur-sm border border-zinc-700 text-zinc-300 hover:text-white transition-colors"
+          className="p-3 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white shadow-2xl hover:scale-105 active:scale-95 transition-all"
           title="몰입모드 해제"
         >
           <Eye className="w-5 h-5 text-indigo-400" />
@@ -55,93 +61,91 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
   }
 
   return (
-    <div className="absolute bottom-16 right-3 z-30 flex flex-col items-center gap-3 pointer-events-auto">
+    <div className="absolute bottom-16 right-2.5 z-30 flex flex-col items-center gap-4 pointer-events-auto select-none">
       
-      {/* 1. 좋아요 */}
+      {/* 1. 좋아요 (Heart with count - YouTube floating icon style) */}
       <button
         type="button"
         onClick={() => toggleLike(clip.id)}
-        className="group flex flex-col items-center gap-0.5 focus:outline-none"
+        className="group flex flex-col items-center gap-1 focus:outline-none cursor-pointer"
         title="좋아요"
       >
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm border transition-colors ${
-            isLiked
-              ? 'bg-rose-500/10 border-rose-500/40 text-rose-500'
-              : 'bg-zinc-900/70 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
-          }`}
-        >
+        <div className="p-1 active:scale-75 transition-transform">
           <Heart
-            className={`w-4 h-4 ${isLiked ? 'fill-rose-500' : ''}`}
+            className={`w-7 h-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] transition-all ${
+              isLiked 
+                ? 'fill-rose-500 text-rose-500 scale-110' 
+                : 'text-white stroke-[2.2] group-hover:scale-105'
+            }`}
           />
         </div>
-        <span className="text-[10px] font-medium text-zinc-400">
-          {clip.likes + (isLiked ? 1 : 0)}
+        <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-tight">
+          {formattedLikes}
         </span>
       </button>
 
-      {/* 2. 저장 (내 페이지에서 모아보기) */}
+      {/* 2. 저장 (Bookmark - YouTube floating icon style) */}
       <button
         type="button"
         onClick={() => toggleSaveClip(clip.id)}
-        className="group flex flex-col items-center gap-0.5 focus:outline-none"
+        className="group flex flex-col items-center gap-1 focus:outline-none cursor-pointer"
         title={isSaved ? '저장됨' : '저장하기'}
       >
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm border transition-colors ${
-            isSaved
-              ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400'
-              : 'bg-zinc-900/70 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
-          }`}
-        >
-          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-indigo-400' : ''}`} />
+        <div className="p-1 active:scale-75 transition-transform">
+          <Bookmark 
+            className={`w-7 h-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] transition-all ${
+              isSaved 
+                ? 'fill-amber-400 text-amber-400 scale-110' 
+                : 'text-white stroke-[2.2] group-hover:scale-105'
+            }`} 
+          />
         </div>
-        <span className="text-[10px] font-medium text-zinc-400">
+        <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-tight">
           저장
         </span>
       </button>
 
-      {/* 3. 대본/메모 */}
+      {/* 3. 대본/메모 (Transcript & Notes) */}
       <button
         type="button"
         onClick={onOpenTranscriptSheet}
-        className="group flex flex-col items-center gap-0.5 focus:outline-none"
+        className="group flex flex-col items-center gap-1 focus:outline-none cursor-pointer"
         title="대본 & 메모"
       >
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-900/70 backdrop-blur-sm border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
-          <FileText className="w-4 h-4" />
+        <div className="p-1 active:scale-75 transition-transform">
+          <FileText className="w-7 h-7 text-white stroke-[2.2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform" />
         </div>
-        <span className="text-[10px] font-medium text-zinc-400">
+        <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-tight">
           대본/메모
         </span>
       </button>
 
-      {/* 4. 몰입모드 */}
+      {/* 4. 몰입모드 (Distraction-Free) */}
       <button
         type="button"
         onClick={() => setDistractionFree(true)}
-        className="group flex flex-col items-center gap-0.5 focus:outline-none"
-        title="몰입모드"
+        className="group flex flex-col items-center gap-1 focus:outline-none cursor-pointer"
+        title="화면 정보 숨기기"
       >
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-900/70 backdrop-blur-sm border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
-          <Eye className="w-4 h-4" />
+        <div className="p-1 active:scale-75 transition-transform">
+          <Eye className="w-7 h-7 text-white stroke-[2.2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform" />
         </div>
-        <span className="text-[10px] font-medium text-zinc-400">
+        <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-tight">
           몰입모드
         </span>
       </button>
 
-      {/* 5. 공유 */}
+      {/* 5. 공유 (Share) */}
       <button
         type="button"
         onClick={handleShare}
-        className="group flex flex-col items-center gap-0.5 focus:outline-none"
-        title="공유"
+        className="group flex flex-col items-center gap-1 focus:outline-none cursor-pointer"
+        title="링크 복사"
       >
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-900/70 backdrop-blur-sm border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
-          <Share2 className="w-4 h-4" />
+        <div className="p-1 active:scale-75 transition-transform">
+          <Share2 className="w-7 h-7 text-white stroke-[2.2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-transform" />
         </div>
-        <span className="text-[10px] font-medium text-zinc-400">
+        <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-tight">
           공유
         </span>
       </button>

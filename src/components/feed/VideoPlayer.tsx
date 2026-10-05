@@ -4,22 +4,21 @@ import type { VideoClip } from '../../types';
 import { 
   Play, 
   Pause, 
-  Volume2, 
-  VolumeX, 
-  Eye, 
-  BookOpen,
-  ChevronRight
+  ArrowRight,
+  BookOpen
 } from 'lucide-react';
 
 interface VideoPlayerProps {
   clip: VideoClip;
   isActive: boolean;
   onTimeUpdate: (currentTime: number, duration: number, progressRatio: number) => void;
-  onOpenTranscriptSheet: () => void;
+  onOpenTranscriptSheet?: () => void;
   targetSeekTime: number | null;
   onClearSeekTime: () => void;
   onTitleClick?: () => void;
   showPreviewBadge?: boolean;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -30,18 +29,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onClearSeekTime,
   onTitleClick,
   showPreviewBadge,
+  isMuted: propIsMuted,
 }) => {
   const { 
     recordView, 
     distractionFree, 
     setDistractionFree,
-    viewCounts,
     appSettings,
   } = useApp();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [isMuted, setIsMuted] = useState<boolean>(appSettings.startMuted ?? true);
+  const isMuted = propIsMuted !== undefined ? propIsMuted : (appSettings.startMuted ?? true);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(clip.durationSeconds || 15);
   const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
@@ -55,7 +54,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setCurrentTime(0);
   }
 
-  // 3-second view count tracker (No popup, just quiet background record)
+  // 3-second view count tracker (No popup, background record)
   useEffect(() => {
     if (!isActive) return;
 
@@ -76,7 +75,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          setIsMuted(true);
           video.muted = true;
           video.play().catch(() => {});
         });
@@ -110,13 +108,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setTimeout(() => setShowPlayIcon(false), 400);
   };
 
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!videoRef.current) return;
-    const nextMuted = !isMuted;
-    videoRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  };
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
@@ -142,7 +138,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const currentTotalViews = viewCounts[clip.id] || clip.views || 0;
 
   return (
     <div 
@@ -174,68 +169,40 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <img
             src={clip.thumbnailUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-15 filter blur-sm"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-sm"
           />
           <div className="relative z-10 flex items-end justify-center gap-1.5 h-10 mb-2">
-            <span className="w-1 h-5 bg-zinc-500 rounded-full animate-pulse" />
-            <span className="w-1 h-8 bg-zinc-400 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
-            <span className="w-1 h-10 bg-indigo-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
-            <span className="w-1 h-6 bg-zinc-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
-            <span className="w-1 h-4 bg-zinc-500 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+            <span className="w-1.5 h-6 bg-zinc-400 rounded-none animate-pulse" />
+            <span className="w-1.5 h-10 bg-indigo-400 rounded-none animate-pulse" style={{ animationDelay: '150ms' }} />
+            <span className="w-1.5 h-12 bg-white rounded-none animate-pulse" style={{ animationDelay: '300ms' }} />
+            <span className="w-1.5 h-8 bg-indigo-400 rounded-none animate-pulse" style={{ animationDelay: '200ms' }} />
+            <span className="w-1.5 h-5 bg-zinc-400 rounded-none animate-pulse" style={{ animationDelay: '400ms' }} />
           </div>
         </div>
       )}
 
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/85 pointer-events-none" />
+      {/* Modern Vignette Gradient (Ensures High Contrast & Readability) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 via-50% to-black/30 pointer-events-none" />
 
       {/* Center Play/Pause Pop Animation */}
       {showPlayIcon && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-14 h-14 rounded-full bg-zinc-900/80 border border-zinc-700/60 flex items-center justify-center text-white">
-            {isPlaying ? <Play className="w-6 h-6 fill-white ml-0.5" /> : <Pause className="w-6 h-6 fill-white" />}
-          </div>
-        </div>
-      )}
-
-      {/* Top Floating Controls: ONLY Volume Toggle on the right (No '조회수+1' popup) */}
-      {!distractionFree && (
-        <div className="absolute top-4 right-4 z-20 flex items-center pointer-events-none">
-          <button
-            type="button"
-            onClick={toggleMute}
-            className="pointer-events-auto p-2 rounded-full bg-zinc-900/70 border border-zinc-800 text-zinc-300 hover:text-white transition-colors"
-            title={isMuted ? '음소거 해제' : '음소거'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-zinc-400" /> : <Volume2 className="w-4 h-4 text-zinc-200" />}
-          </button>
-        </div>
-      )}
-
-      {/* Bottom-Left Metadata Overlay */}
-      {!distractionFree && (
-        <div className="absolute bottom-5 left-0 right-16 p-4 z-20 pointer-events-none flex flex-col gap-1.5">
-          {/* Badge Row */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {showPreviewBadge && (
-              <span className="px-2 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold">
-                1화 미리보기
-              </span>
+          <div className="w-16 h-16 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-2xl">
+            {isPlaying ? (
+              <Play className="w-7 h-7 fill-white ml-1 text-white" />
+            ) : (
+              <Pause className="w-7 h-7 fill-white text-white" />
             )}
-            <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-200 text-[10px] font-semibold">
-              {clip.category}
-            </span>
-            <span className="px-2 py-0.5 rounded bg-zinc-800/80 text-zinc-300 border border-zinc-700/60 text-[10px] font-medium flex items-center gap-1">
-              <BookOpen className="w-3 h-3 text-zinc-400" />
-              {clip.episodeIndex}/{clip.totalEpisodes}강
-            </span>
-            <span className="px-2 py-0.5 rounded bg-zinc-900/80 text-zinc-400 border border-zinc-800 text-[10px] font-medium flex items-center gap-1">
-              <Eye className="w-3 h-3 text-zinc-400" />
-              <span>{currentTotalViews.toLocaleString()}회</span>
-            </span>
           </div>
+        </div>
+      )}
 
-          {/* Course & Clip Titles: Clicking navigates to Course Detail in '강좌' page */}
+
+      {/* Bottom-Left Information Overlay */}
+      {!distractionFree && (
+        <div className="absolute bottom-5 left-0 right-16 px-4 z-20 pointer-events-none flex flex-col gap-2 select-none">
+          
+          {/* 1. Course Button Bar: Clicking navigates to Course Detail in '강좌' page */}
           <div
             onClick={e => {
               if (onTitleClick) {
@@ -243,32 +210,60 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 onTitleClick();
               }
             }}
-            className={`group pointer-events-auto ${onTitleClick ? 'cursor-pointer hover:opacity-90' : ''}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-xs font-semibold text-zinc-100 hover:bg-black/80 transition-all pointer-events-auto cursor-pointer max-w-full shadow-sm"
           >
-            <div className="flex items-center gap-1 text-xs text-zinc-300 font-medium">
-              <span className="line-clamp-1">{clip.courseTitle}</span>
-              {onTitleClick && (
-                <span className="inline-flex items-center text-[10px] text-indigo-400 bg-indigo-950/60 border border-indigo-500/30 px-1.5 py-0.2 rounded font-semibold ml-1 shrink-0">
-                  강좌 보기 <ChevronRight className="w-3 h-3" />
-                </span>
-              )}
+            <span className="truncate max-w-[200px]">{clip.courseTitle}</span>
+            {onTitleClick && (
+              <span className="shrink-0 text-indigo-400 flex items-center gap-0.5 text-[11px] font-bold">
+                강좌 보기 <ArrowRight className="w-3 h-3" />
+              </span>
+            )}
+          </div>
+
+          {/* 2. Main Clip Headline */}
+          <h2 className="text-base font-bold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] line-clamp-2">
+            {clip.clipTitle}
+          </h2>
+
+          {/* 3. Badges Row: rounded-full YouTube pill badges */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {showPreviewBadge && (
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold shadow-sm">
+                1화 미리보기
+              </span>
+            )}
+            <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[11px] font-medium">
+              {clip.category}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-zinc-200 text-[11px] font-medium flex items-center gap-1">
+              <BookOpen className="w-3 h-3 text-indigo-400" />
+              <span>{clip.episodeIndex}강 / {clip.totalEpisodes}강</span>
+            </span>
+          </div>
+
+          {/* 4. Instructor Profile Row */}
+          <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
+              <div className="w-5 h-5 rounded-full border border-white/40 overflow-hidden bg-zinc-800 shrink-0">
+                <img
+                  src={clip.thumbnailUrl}
+                  alt={clip.instructorName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="font-bold text-white">{clip.instructorName}</span>
+              <span className="text-zinc-500 text-[10px]">|</span>
+              <span className="text-zinc-300 font-medium text-[11px]">{clip.instructorRole}</span>
             </div>
-            <h2 className="text-base font-bold text-white leading-snug line-clamp-2 mt-0.5">
-              {clip.clipTitle}
-            </h2>
           </div>
 
-          {/* Instructor Role & Name */}
-          <div className="flex items-center gap-1.5 pt-0.5 text-xs text-zinc-300">
-            <span className="font-medium text-white">{clip.instructorName}</span>
-            <span className="text-zinc-500">·</span>
-            <span className="text-zinc-400 text-[11px]">{clip.instructorRole}</span>
-          </div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1 pt-0.5">
+          {/* 5. Keyword Tags */}
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
             {clip.tags.map(tag => (
-              <span key={tag} className="text-[10px] text-zinc-500">
+              <span
+                key={tag}
+                className="text-[10px] font-medium text-zinc-300 bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10"
+              >
                 #{tag}
               </span>
             ))}
@@ -276,17 +271,20 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </div>
       )}
 
-      {/* Bottom Thin Horizontal Real-Time Video Progress Bar */}
+      {/* Bottom Horizontal Real-Time Video Progress Bar with Red Scrubber Dot from home.png */}
       <div 
         className="absolute bottom-0 left-0 right-0 z-30 h-2 flex items-end cursor-pointer group pointer-events-auto"
         onClick={handleProgressClick}
         title="영상 재생 진행률"
       >
-        <div className="w-full h-0.5 group-hover:h-1 bg-white/20 transition-all relative">
+        <div className="w-full h-0.5 group-hover:h-1 bg-white/25 transition-all relative">
           <div
-            className="h-full bg-indigo-500 relative transition-all duration-100"
+            className="h-full bg-red-600 relative transition-all duration-100"
             style={{ width: `${progressPercent}%` }}
-          />
+          >
+            {/* YouTube Red Scrubber Dot from home.png */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2.5 h-2.5 bg-red-600 rounded-full shadow-[0_0_6px_rgba(239,68,68,1)] pointer-events-none" />
+          </div>
         </div>
       </div>
     </div>

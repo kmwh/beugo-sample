@@ -15,10 +15,10 @@ const AppContent: React.FC = () => {
   const { activePage } = useApp();
 
   return (
-    <div className="min-h-screen w-full bg-zinc-950 flex justify-center text-zinc-100 selection:bg-indigo-500 selection:text-white font-sans">
+    <div className="min-h-screen w-full bg-[#050608] flex justify-center text-zinc-100 selection:bg-indigo-500 selection:text-white font-sans">
       
       {/* Mobile-First Container (Modoodoc Frame: Max 460px) */}
-      <div className="w-full max-w-[460px] min-h-screen bg-zinc-900 border-x border-zinc-800 shadow-2xl flex flex-col relative overflow-x-hidden">
+      <div className="w-full max-w-[460px] min-h-screen bg-[#090a0f] border-x border-white/[0.06] shadow-[0_0_60px_rgba(0,0,0,0.9)] flex flex-col relative overflow-x-hidden">
         
         {/* Main Page Views (No Header, floating logo only on Home) */}
         <main className="flex-1 w-full flex flex-col overflow-hidden pb-14">

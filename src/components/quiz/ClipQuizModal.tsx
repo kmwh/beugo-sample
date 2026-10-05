@@ -29,20 +29,20 @@ export const ClipQuizModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-2xl text-white">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
+      <div className="w-full max-w-[400px] bg-[#0f0f0f] border border-white/15 rounded-2xl p-6 shadow-2xl text-white">
         
         {/* Top Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-zinc-800 text-indigo-400">
+        <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-full bg-white/10 text-indigo-400 border border-white/15">
               <HelpCircle className="w-4 h-4" />
             </span>
             <div>
-              <span className="text-[11px] font-semibold text-zinc-400 block">
-                1문항 확인 퀴즈
+              <span className="text-[11px] font-bold text-indigo-400 block tracking-tight">
+                [{clip.episodeIndex}강] 확인 퀴즈
               </span>
-              <span className="text-xs text-zinc-200 font-medium line-clamp-1">
+              <span className="text-xs text-zinc-300 font-medium line-clamp-1">
                 {clip.clipTitle}
               </span>
             </div>
@@ -50,7 +50,7 @@ export const ClipQuizModal: React.FC = () => {
           <button
             type="button"
             onClick={closeClipQuiz}
-            className="p-1 text-zinc-500 hover:text-white"
+            className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -58,7 +58,7 @@ export const ClipQuizModal: React.FC = () => {
 
         {/* Question Text */}
         <div className="my-4">
-          <h3 className="text-sm font-semibold text-white leading-relaxed">
+          <h3 className="text-sm font-bold text-white leading-relaxed">
             Q. {quiz.question}
           </h3>
         </div>
@@ -66,18 +66,18 @@ export const ClipQuizModal: React.FC = () => {
         {/* Choices */}
         <div className="space-y-2">
           {quiz.options.map((option, idx) => {
-            let itemStyle = 'bg-zinc-800/40 border-zinc-800 hover:bg-zinc-800 text-zinc-200';
+            let itemStyle = 'bg-white/5 border-white/10 hover:bg-white/10 text-zinc-200';
             let icon = null;
 
             if (isAnswered) {
               if (idx === quiz.correctIndex) {
-                itemStyle = 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 font-medium';
+                itemStyle = 'bg-emerald-950/60 border-emerald-500/80 text-emerald-200 font-bold shadow-sm';
                 icon = <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
               } else if (idx === selectedIndex) {
-                itemStyle = 'bg-rose-950/40 border-rose-500/50 text-rose-300 font-medium';
+                itemStyle = 'bg-rose-950/60 border-rose-500/80 text-rose-200 font-bold shadow-sm';
                 icon = <XCircle className="w-4 h-4 text-rose-400 shrink-0" />;
               } else {
-                itemStyle = 'bg-zinc-900/40 border-zinc-900 text-zinc-600';
+                itemStyle = 'bg-white/[0.02] border-white/5 text-zinc-600 opacity-50';
               }
             }
 
@@ -87,13 +87,13 @@ export const ClipQuizModal: React.FC = () => {
                 type="button"
                 disabled={isAnswered}
                 onClick={() => handleSelectOption(idx)}
-                className={`w-full text-left p-3 rounded-xl border text-xs leading-snug flex items-center justify-between gap-3 transition-colors ${itemStyle}`}
+                className={`w-full text-left p-3.5 rounded-xl border text-xs leading-snug flex items-center justify-between gap-3 transition-all ${itemStyle} ${!isAnswered ? 'cursor-pointer' : ''}`}
               >
                 <div className="flex items-center gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-400 shrink-0 font-medium">
+                  <span className="w-5 h-5 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-[10px] text-zinc-300 shrink-0 font-mono font-bold">
                     {idx + 1}
                   </span>
-                  <span>{option}</span>
+                  <span className="font-medium text-xs leading-normal">{option}</span>
                 </div>
                 {icon}
               </button>
@@ -103,15 +103,19 @@ export const ClipQuizModal: React.FC = () => {
 
         {/* Explanation Box on Answer */}
         {isAnswered && (
-          <div className="mt-3.5 p-3 rounded-xl bg-zinc-950/70 border border-zinc-800 text-xs">
-            <div className="font-semibold mb-1">
+          <div className="mt-4 p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+            <div className="font-bold mb-1.5">
               {isCorrect ? (
-                <span className="text-emerald-400">정답입니다!</span>
+                <span className="text-emerald-400 flex items-center gap-1.5 text-xs font-mono">
+                  <CheckCircle2 className="w-4 h-4" /> 정답입니다!
+                </span>
               ) : (
-                <span className="text-rose-400">오답입니다.</span>
+                <span className="text-rose-400 flex items-center gap-1.5 text-xs font-mono">
+                  <XCircle className="w-4 h-4" /> 해설을 확인하세요.
+                </span>
               )}
             </div>
-            <p className="text-zinc-400 leading-relaxed">
+            <p className="text-zinc-300 leading-relaxed font-normal">
               {quiz.explanation}
             </p>
           </div>
@@ -119,14 +123,14 @@ export const ClipQuizModal: React.FC = () => {
 
         {/* Close Action */}
         {isAnswered && (
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4">
             <button
               type="button"
               onClick={closeClipQuiz}
-              className="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full py-2.5 px-4 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
             >
               <span>계속 시청하기</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
