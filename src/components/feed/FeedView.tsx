@@ -125,12 +125,9 @@ export const FeedView: React.FC = () => {
         <div className="absolute top-0 inset-x-0 z-40 px-3.5 pt-3 pb-1 flex flex-col gap-2 pointer-events-none">
           <div className="flex items-center justify-between w-full">
             {/* Left: beugo service logo */}
-            <div className="flex items-center gap-2 select-none">
+            <div className="flex items-center select-none">
               <span className="text-xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                 beugo
-              </span>
-              <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
-                3분 실무
               </span>
             </div>
 
